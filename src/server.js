@@ -17,13 +17,21 @@ const server = http.createServer(app);
 const wss = SocketIO(server);
 
 wss.on("connection", (socket) => {
-    socket.onAny((event) => {
-        console.log(`Socket Event:${event}`);
-    })
     socket.on("enter_room",(roomName, done) => {
+        console.log(roomName);
         socket.join(roomName);
         done();
     });
+    socket.on("disconnecting", () => {
+        socket.rooms.forEach((room) =>
+          socket.to(room).emit("bye", socket.nickname)
+        );
+      });
+    socket.on("new_message", (msg, room, done) => {
+        socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
+        done();
+      });
+    socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
 });
 
 server.listen(3000)
