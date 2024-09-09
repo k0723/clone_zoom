@@ -9,6 +9,7 @@ room.hidden = true;
 
 let roomName;
 
+
 function handleRoomSubmit(event) {
     event.preventDefault();
     const input = form.querySelector("input");

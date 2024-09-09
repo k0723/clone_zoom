@@ -16,6 +16,21 @@ app.get("/", (req, res) => res.render("home"));
 const server = http.createServer(app);
 const wss = SocketIO(server);
 
+function publicRooms() {
+    const {
+        sockets: {
+            adapter: {sids, rooms},
+        },
+    } = wss;
+    const publicRooms = [];
+    rooms.forEach((_,key) => {
+        if(sids.get(key) === undefined) {
+            publicRooms.push(key)
+        }
+    });
+    return publicRooms;
+}
+
 wss.on("connection", (socket) => {
     socket.on("enter_room",(roomName, done) => {
         console.log(roomName);
