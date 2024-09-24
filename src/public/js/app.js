@@ -4,11 +4,59 @@ const socket = io();
 const welcome = document.getElementById("welcome");
 const form = welcome.querySelector("form");
 const room = document.getElementById("room");
+const userVideo = document.getElementById("userVideo");
+const muteBtn = document.getElementById("mute");
+const cameraBtn = document.getElementById("camera");
+let userStream;
 
 room.hidden = true;
 
 let roomName;
 
+muteBtn.addEventListener("click", handlerMuteClick)
+
+cameraBtn.addEventListener("click", handlerCameraClick)
+
+let muted = false;
+let cameraOff = false;
+
+async function getMedia() {
+  try{
+    userStream = await navigator.mediaDevices.getUserMedia({
+      audio:true,
+      video:true,
+    });
+    userVideo.srcObject = userStream;
+    console.log(userStream);
+  }
+  catch(e){
+    console.log(e);
+  }
+}
+
+function handlerMuteClick(event) {
+  if(!muted) {
+    muteBtn.innerText = "Unmute"
+    muted = true;
+  }
+  else {
+    muteBtn.innerText = "Mute"
+    muted = false;
+  }
+}
+
+function handlerCameraClick(event) {
+  if(!cameraOff) {
+    cameraBtn.innerText = "cameraOff"
+    cameraOff = false;
+  }
+  else {
+    cameraBtn.innerText = "cameraOn"
+    cameraOff = true;
+  }
+}
+
+getMedia();
 
 function handleRoomSubmit(event) {
     event.preventDefault();
