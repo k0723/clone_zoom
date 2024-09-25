@@ -7,6 +7,7 @@ const room = document.getElementById("room");
 const userVideo = document.getElementById("userVideo");
 const muteBtn = document.getElementById("mute");
 const cameraBtn = document.getElementById("camera");
+const cameras = document.getElementById("cameras");
 let userStream;
 
 room.hidden = true;
@@ -27,6 +28,7 @@ async function getMedia() {
       video:true,
     });
     userVideo.srcObject = userStream;
+    await getCameras();
     console.log(userStream);
   }
   catch(e){
@@ -35,6 +37,10 @@ async function getMedia() {
 }
 
 function handlerMuteClick(event) {
+  userStream
+    .getAudioTracks()
+    .forEach(track => track.enabled = !track.enabled);
+  
   if(!muted) {
     muteBtn.innerText = "Unmute"
     muted = true;
@@ -45,7 +51,27 @@ function handlerMuteClick(event) {
   }
 }
 
+async function getCameras(){
+  try{
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    const camera = devices.filter(devices => devices.kind === "videoinput")
+    camera.forEach(camera => {
+      const option = document.createElement("option")
+      option.value = camera.deviceId
+      option.innerText = camera.label;
+      cameras.appendChild(option);
+    })
+  }
+  catch(e){
+    console.log(e);
+  }
+}
+
 function handlerCameraClick(event) {
+  userStream
+    .getVideoTracks()
+    .forEach(track => track.enabled = !track.enabled);
+  
   if(!cameraOff) {
     cameraBtn.innerText = "cameraOff"
     cameraOff = false;
