@@ -9,11 +9,15 @@ html(lang="en")
         header 
             h1 Noom
         main
-            video#userVideo(autoplay,playsinline,width='400', height = '400')
-            button#mute Mute
-            button#camera Camera Off
-            select#cameras
-                option(value="device") Face Camera
+            div#call
+                video#userVideo(autoplay,playsinline,width='400', height = '400')
+                button#mute Mute
+                button#camera Camera Off
+                select#cameras
+                    option(value="device") Face Camera
+            
+
+
             div#welcome
                 form
                     input(type = "text", placeholder="room name", required)

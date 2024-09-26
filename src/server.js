@@ -51,6 +51,15 @@ wss.on("connection", (socket) => {
         socket.to(roomName).emit("welcome", socket.nickname, countRoom(roomName));
         wss.sockets.emit("room_change", publicRooms());
     });
+    socket.on("offer", (offer,roomName)=> {
+        socket.to(roomName).emit("offer", offer);
+    });
+    socket.on("answer", (answer,roonName)=> {
+        socket.to(roonName).emit("answer",answer);
+    })
+    socket.on("ice", (ice, roomName) => {
+        socket.to(roomName).emit("ice",ice);
+    })
     socket.on("disconnecting", () => {
         socket.rooms.forEach((room) =>
           socket.to(room).emit("bye", socket.nickname,countRoom(room)-1)
