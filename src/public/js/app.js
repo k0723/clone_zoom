@@ -37,9 +37,9 @@ async function MakeConnection() {
   console.log(userStream.getTracks());
 }
 function handleAddStream(data) {
-  console.log("get event offer peer");
-  console.log(data);
-  console.log(userStream);
+  const peerStream = document.getElementById("peerStream");
+  console.log(data.stream);
+  peerStream.srcObject = data.stream;
 }
 function handleIce(data) {
   console.log("sent ice");
