@@ -42,7 +42,6 @@ function handleAddStream(data) {
   console.log(userStream);
 }
 function handleIce(data) {
-  console.log("sent ice");
   socket.emit("ice",data.candidate, roomName);
 }
 async function stratMedia() {
@@ -54,7 +53,9 @@ async function stratMedia() {
 
 async function handleCameraChange() {
   await getMedia(camerasSelect.value);
-  console.log(cameras.value)
+  if(peerConnection){
+    console.log(peerConnection.getSenders())
+  }
 }
 
 async function getMedia(deviceId) {
@@ -131,6 +132,10 @@ function handlerCameraClick(event) {
 }
 
 
+function handleAddStream(data) {
+  const peersStream = document.getElementById("peerStream");
+  peersStream.srcObject= data.stream;
+}
 async function handleRoomSubmit(event) {
     event.preventDefault();
     await stratMedia();
