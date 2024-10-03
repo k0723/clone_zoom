@@ -1,6 +1,7 @@
 const socket = io();
 
-
+// npm i -g localtunnel
+//lt --port 3000
 const welcome = document.getElementById("welcome");
 const form = welcome.querySelector("form");
 const room = document.getElementById("room");
@@ -54,7 +55,11 @@ async function stratMedia() {
 async function handleCameraChange() {
   await getMedia(camerasSelect.value);
   if(peerConnection){
-    console.log(peerConnection.getSenders())
+    const videoTrack = userStream.getVideoTracks()[0];
+    const videoSender = peerConnection
+      .getSenders()
+      .find(sender => sender.track.kind === "video");
+    videoSender.replaceTrack(videoTrack);
   }
 }
 
