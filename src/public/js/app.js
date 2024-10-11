@@ -12,6 +12,7 @@ const cameras = document.getElementById("cameras");
 const call = document.getElementById("call");
 let userStream;
 let peerConnection;
+let dataChannel;
 
 room.hidden = true;
 call.hidden = true;
@@ -29,7 +30,19 @@ let cameraOff = false;
 
 
 async function MakeConnection() {
-  peerConnection = new RTCPeerConnection();
+  peerConnection = new RTCPeerConnection({
+    iceServers: [
+      { 
+        urls: [
+          "stun:stun.l.google.com:19302",
+          "stun:stun1.l.google.com:19302",
+          "stun:stun2.l.google.com:19302",
+          "stun:stun3.l.google.com:19302",
+          "stun:stun4.l.google.com:19302",
+        ]
+      }
+    ]
+  });
   peerConnection.addEventListener("icecandidate", handleIce);
   peerConnection.addEventListener("addstream",handleAddStream);
   userStream
@@ -193,6 +206,8 @@ socket.on("ice", ice => {
 })
 
 socket.on("welcome", async(user,newCount) => {
+    dataChannel = peerConnection.createDataChannel("chat");
+    dataChannel.addEventListener("message", console.log);
     const offer = await peerConnection.createOffer();
     peerConnection.setLocalDescription(offer);
     console.log("send offer");
@@ -203,6 +218,7 @@ socket.on("welcome", async(user,newCount) => {
   });
 
 socket.on("offer", async(offer)=> {
+  peerConnection.addEventListener("datachannel", console.log);
   peerConnection.setRemoteDescription(offer);
   console.log(offer);
   const answer = await peerConnection.createAnswer();
