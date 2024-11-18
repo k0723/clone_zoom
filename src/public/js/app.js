@@ -167,9 +167,9 @@ function handleMessageSubmit(event) {
     event.preventDefault();
     const input = room.querySelector("#msg input");
     const value = input.value;
-    socket.emit("new_message", input.value, roomName, () => {
-      addMessage(`You: ${value}`);
-    });
+    addMessage(`You: ${value}`);
+    dataChannel.send(value);
+    console.log(dataChannel);
     input.value = "";
     }
 
@@ -207,7 +207,7 @@ socket.on("ice", ice => {
 
 socket.on("welcome", async(user,newCount) => {
     dataChannel = peerConnection.createDataChannel("chat");
-    dataChannel.addEventListener("message", console.log);
+    dataChannel.addEventListener("message", (event) => addMessage(event.data));
     const offer = await peerConnection.createOffer();
     peerConnection.setLocalDescription(offer);
     console.log("send offer");
@@ -218,11 +218,14 @@ socket.on("welcome", async(user,newCount) => {
   });
 
 socket.on("offer", async(offer)=> {
-  peerConnection.addEventListener("datachannel", console.log);
+  peerConnection.addEventListener("datachannel", (event) => {
+    dataChannel = event.channel;
+    dataChannel.addEventListener("message", (event) => {
+      addMessage(event.data)
+    })
+  });
   peerConnection.setRemoteDescription(offer);
-  console.log(offer);
   const answer = await peerConnection.createAnswer();
-  console.log(answer);
   peerConnection.setLocalDescription(answer);
   socket.emit("answer",answer, roomName);
 })
