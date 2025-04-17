@@ -1,8 +1,10 @@
 const socket = io();
-
+const connection = import('./connection.js')
+const camera = import('./camera.js')
 // npm i -g localtunnel
 //lt --port 3000
 const welcome = document.getElementById("welcome");
+const nickname = document.getElementById("name");
 const form = welcome.querySelector("form");
 const room = document.getElementById("room");
 const userVideo = document.getElementById("userVideo");
@@ -10,10 +12,14 @@ const muteBtn = document.getElementById("mute");
 const cameraBtn = document.getElementById("camera");
 const cameras = document.getElementById("cameras");
 const call = document.getElementById("call");
-let userStream;
-let peerConnection;
-let dataChannel;
 
+let userStream;
+let peerConnection = connection.MakeConnection;
+let dataChannel;
+let userNickname = "userjointest";
+
+connection.handleAddStream;
+connection.handleIce;
 room.hidden = true;
 call.hidden = true;
 
@@ -28,41 +34,12 @@ cameras.addEventListener("input",handleCameraChange);
 let muted = false;
 let cameraOff = false;
 
-
-async function MakeConnection() {
-  peerConnection = new RTCPeerConnection({
-    iceServers: [
-      { 
-        urls: [
-          "stun:stun.l.google.com:19302",
-          "stun:stun1.l.google.com:19302",
-          "stun:stun2.l.google.com:19302",
-          "stun:stun3.l.google.com:19302",
-          "stun:stun4.l.google.com:19302",
-        ]
-      }
-    ]
-  });
-  peerConnection.addEventListener("icecandidate", handleIce);
-  peerConnection.addEventListener("addstream",handleAddStream);
-  userStream
-  .getTracks()
-  .forEach(track => peerConnection.addTrack(track, userStream));
-  console.log(userStream.getTracks());
-}
-function handleAddStream(data) {
-  const peerStream = document.getElementById("peerStream");
-  console.log(data.stream);
-  peerStream.srcObject = data.stream;
-}
-function handleIce(data) {
-  socket.emit("ice",data.candidate, roomName);
-}
 async function stratMedia() {
   room.hidden = false;
   call.hidden = false;
-  await getMedia();
-  MakeConnection();
+  // await getMedia();
+  await camera.getMedia;
+  console.log('function active')
 }
 
 async function handleCameraChange() {
@@ -91,7 +68,7 @@ async function getMedia(deviceId) {
     );
     userVideo.srcObject = userStream;
     if(!deviceId) {
-      await getCameras();
+      await camera.getCameras;
     }
   }
   catch(e){
@@ -114,26 +91,6 @@ function handlerMuteClick(event) {
   }
 }
 
-async function getCameras(){
-  try{
-    const devices = await navigator.mediaDevices.enumerateDevices();
-    const camera = devices.filter(devices => devices.kind === "videoinput");
-    const currentCamera = userStream.getVideoTracks()[0];
-    camera.forEach(camera => {
-      const option = document.createElement("option")
-      option.value = camera.deviceId
-      option.innerText = camera.label;
-      if(currentCamera.label == camera.label){
-        option.selected = true;
-      }
-      cameras.appendChild(option);
-    })
-  }
-  catch(e){
-    console.log(e);
-  }
-}
-
 function handlerCameraClick(event) {
   userStream
     .getVideoTracks()
@@ -150,34 +107,33 @@ function handlerCameraClick(event) {
 }
 
 
-function handleAddStream(data) {
-  const peersStream = document.getElementById("peerStream");
-  peersStream.srcObject= data.stream;
-}
 async function handleRoomSubmit(event) {
     event.preventDefault();
     await stratMedia();
-    const input = form.querySelector("input");
+    console.log(userStream)
+    const input = welcome.querySelector("input");
+    console.log(input);
     socket.emit("enter_room", input.value, showRoom);
     roomName = input.value;
     input.value = "";
-
+    joinUser();
     }
 function handleMessageSubmit(event) {
     event.preventDefault();
     const input = room.querySelector("#msg input");
     const value = input.value;
-    addMessage(`You: ${value}`);
-    dataChannel.send(value);
-    console.log(dataChannel);
+    addMessage(`you: ${value}`);
+    dataChannel.send(`${userNickname} : ${value}`);
     input.value = "";
     }
 
 function handleNicknamesubmit(event) {
     event.preventDefault();
-    const input = room.querySelector("#name input");
+    const input = nickname.querySelector("input");
+    console.log(input)
     const value = input.value;
-    socket.emit("nickname", input.value);
+    userNickname = value;
+    console.log(input)
     }
 
 function addMessage(message) {
@@ -187,15 +143,16 @@ function addMessage(message) {
   ul.appendChild(li);
     }
 
+async function joinUser() {
+  console.log('test start');
+}
 
 async function showRoom() {
     welcome.hidden = true;
     const h3 = room.querySelector("h3");
     h3.innerText = `Room ${roomName}`
     const msgForm = room.querySelector("#msg");
-    const nameForm = room.querySelector("#name");
     msgForm.addEventListener("submit", handleMessageSubmit);
-    nameForm.addEventListener("submit", handleNicknamesubmit);
 }
 
 form.addEventListener("submit", handleRoomSubmit);
@@ -214,7 +171,6 @@ socket.on("welcome", async(user,newCount) => {
     socket.emit("offer", offer, roomName);
     const h3 = room.querySelector("h3");
     h3.innerText = `Room ${roomName} (${newCount})`;
-    addMessage(`${user} arrived!`);
   });
 
 socket.on("offer", async(offer)=> {
@@ -234,16 +190,14 @@ socket.on("answer", answer => {
   peerConnection.setRemoteDescription(answer);
 })
   
-  socket.on("bye", (user,newCount) => {
-    const h3 = room.querySelector("h3");
-    h3.innerText = `Room ${roomName} (${newCount})`;
-    addMessage(`${user} left ㅠㅠ`);
-  });
-  
-  socket.on("new_message", addMessage);
+socket.on("bye", (user,newCount) => {
+  const h3 = room.querySelector("h3");
+  h3.innerText = `Room ${roomName} (${newCount})`;
+  addMessage(`${user} left ㅠㅠ`);
+});
 
-  socket.on("room_change", (rooms) => {
-    const roomList = welcome.querySelector("ul");
+socket.on("room_change", (rooms) => {
+  const roomList = welcome.querySelector("ul");
     if(rooms.length === 0 ) {
       roomList.innerHTML = "";
       return;
@@ -252,5 +206,5 @@ socket.on("answer", answer => {
       const li = document.createElement("li");
       li.innerText = room;
       roomList.append(li);
-    });
   });
+});

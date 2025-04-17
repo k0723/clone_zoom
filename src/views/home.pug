@@ -17,9 +17,12 @@ html(lang="en")
                     option(value="device") Face Camera
             video#peerStream(autoplay,playsinline,width='400', height = '400')
 
-
+            div#name
+                form#nickname
+                    input(placeholder="nickname", required, type = "text")
+                    button Save
             div#welcome
-                form
+                form#Room
                     input(type = "text", placeholder="room name", required)
                     button Enter room
                 h4 OpenRooms
@@ -30,8 +33,5 @@ html(lang="en")
                 form#msg
                     input(placeholder="msseage", required, type = "text")
                     button Send
-                form#name
-                    input(placeholder="nickname", required, type = "text")
-                    button Save
         script(src = "/socket.io/socket.io.js") 
         script(src= "/public/js/app.js")

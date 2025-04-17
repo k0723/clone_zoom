@@ -69,10 +69,6 @@ wss.on("connection", (socket) => {
     socket.on("disconnect", () => {
         wss.sockets.emit("room_change", publicRooms());
     });
-    socket.on("new_message", (msg, room, done) => {
-        socket.to(room).emit("new_message", `${socket.nickname}: ${msg}`);
-        done();
-      });
     socket.on("nickname", (nickname) => (socket["nickname"] = nickname));
 });
 
